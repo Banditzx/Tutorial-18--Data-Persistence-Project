@@ -1,27 +1,34 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
+/// <summary>
+/// The main manager.
+/// </summary>
 public class MainManager : MonoBehaviour
 {
-    public Brick BrickPrefab;
-    public int LineCount = 6;
-    public Rigidbody Ball;
+    [SerializeField] private Brick BrickPrefab;
+    [SerializeField] private int LineCount = 6;
+    [SerializeField] private Rigidbody Ball;
 
-    public Text ScoreText;
-    public GameObject GameOverText;
+    [SerializeField] private Text ScoreText;
+    [SerializeField] private Text BestScoreText;
+    [SerializeField] private GameObject GameOverText;
     
     private bool m_Started = false;
-    private int m_Points;
-    
+    private int m_Points = 0;  
     private bool m_GameOver = false;
 
-    
     // Start is called before the first frame update
     void Start()
     {
+        var bestUsername = StoreManager.Instance.BestUsername;
+        var bestScore = StoreManager.Instance.BestScore;
+        if (bestUsername != null)
+        {
+            BestScoreText.text = string.Format("Best Score: {0} : {1}", bestUsername, bestScore);
+        }
+
         const float step = 0.6f;
         int perLine = Mathf.FloorToInt(4.0f / step);
         
@@ -57,12 +64,15 @@ public class MainManager : MonoBehaviour
         {
             if (Input.GetKeyDown(KeyCode.Space))
             {
+                StoreManager.Instance.Score = m_Points;
+                StoreManager.Instance.Save();
+                StoreManager.Instance.Load();
                 SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
             }
         }
     }
 
-    void AddPoint(int point)
+    private void AddPoint(int point)
     {
         m_Points += point;
         ScoreText.text = $"Score : {m_Points}";
@@ -72,5 +82,10 @@ public class MainManager : MonoBehaviour
     {
         m_GameOver = true;
         GameOverText.SetActive(true);
+    }
+
+    public void BackToMenu()
+    {
+        SceneManager.LoadScene(0);
     }
 }
